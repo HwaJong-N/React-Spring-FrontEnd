@@ -8,28 +8,28 @@ function ToDoIndexPage() {
 
     const handleListClick = useCallback(() => {
         navigate({
-            pathname:'list'
+            pathname: 'list'
         })
-    },[]);
+    }, []);
 
     const handleAddClick = useCallback(() => {
         navigate({
-            pathname:'add'
+            pathname: 'add'
         })
-    },[]);
+    }, []);
 
 
     return (
         <BasicLayout>
-            <div className='w-full flex m-2 p-2'>
-                <div className='text-xl m-1 p-2 w-20 font-extrabold text-center underline'
+            <div className='w-full flex justify-end mb-2 pb-2'>
+                <button className='text-xl mb-2 px-4 py-2 font-extrabold bg-green-500 text-white rounded'
                     onClick={handleListClick}>
                     List
-                </div>
-                <div className='text-xl m-1 p-2 w-20 font-extrabold text-center underline'
+                </button>
+                <button className='text-xl mb-2 ml-2 px-4 py-2 font-extrabold bg-blue-500 text-white rounded'
                     onClick={handleAddClick}>
                     Add
-                </div>
+                </button>
             </div>
             <div className='flex flex-wrap w-full'>
                 <Outlet />
