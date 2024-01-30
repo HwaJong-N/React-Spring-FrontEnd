@@ -17,6 +17,9 @@ function BasicMenu() {
                     <li className="pr-6 text-2xl">
                         <Link to={'/todo/'}>ToDo</Link>
                     </li>
+                    <li className="pr-6 text-2xl">
+                        <Link to={'/items/'}>Item</Link>
+                    </li>
                 </ul>
             </div>
             <div className="w-1/5 flex justify-end p-4 font-medium bg-[#5161ceee]">
