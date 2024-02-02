@@ -32,9 +32,13 @@ function BasicMenu() {
                 </ul>
             </div>
             <div className="w-1/5 flex justify-end p-4 font-medium bg-[#5161ceee]">
-                <div className="text-white text-m m-1 rounded" >
+                <div className="text-white text-m m-1 rounded flex items-center">
                     {loginState.email ?
-                        <Link to={'/member/logout'}>Logout</Link>
+                        <>
+                            <p className="mr-2">안녕하세요 {loginState.nickname}님</p>
+                            <hr className="h-4 border-l-2 border-white mr-2" />
+                            <Link to={'/member/logout'}>Logout</Link>
+                        </>
                         : <Link to={'/member/login'}>Login</Link>
                     }
                 </div>

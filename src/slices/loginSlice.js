@@ -23,12 +23,12 @@ const loginSlice = createSlice({
         login: (state, action) => {
             console.log("state = ", state);
             console.log("action = ", action);
-            return {
-                email: action.payload.email
-            }
+
+            setCookie("member", JSON.stringify(action.payload), 1);
+
+            return action.payload;
         },
         logout: () => {
-            console.log("logout 호출");
             removeCookie("member");
             return { ...initState }
         }

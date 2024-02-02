@@ -40,6 +40,7 @@ function ReadComponent({ itemId }) {
         getItem(itemId).then(data => {
             setItem(data);
             setFetching(false);
+            console.log("data = ", data);
         })
     }, [itemId]);
 
@@ -79,17 +80,17 @@ function ReadComponent({ itemId }) {
             </div>
             <div className="flex justify-end p-4">
                 <button type="button"
-                    className="rounded p-4 m-2 w-32 text-white bg-blue-500"
+                    className="rounded p-3 m-2 w-32 text-white bg-blue-500"
                     onClick={() => moveToList()}>
                     Back To List
                 </button>
                 <button type="button"
-                    className="rounded p-4 m-2 w-32 text-white bg-green-500"
+                    className="rounded p-3 m-2 w-32 text-white bg-green-500"
                     onClick={() => moveToModify(item.itemId)}>
                     Modify
                 </button>
                 <button type="button"
-                    className="rounded p-4 m-2 w-32 text-white bg-red-400"
+                    className="rounded p-3 m-2 w-32 text-white bg-red-400"
                     onClick={handleClickDelete}>
                     Remove
                 </button>

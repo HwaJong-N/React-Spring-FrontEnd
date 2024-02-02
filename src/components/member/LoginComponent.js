@@ -61,6 +61,7 @@ function LoginComponent() {
                     </div>
                 </div>
             </div>
+            <KakaoLoginComponent />
         </div>
     );
 }
