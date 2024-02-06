@@ -3,6 +3,9 @@ import useMove from '../../hooks/useMove';
 import { API_SERVER_HOST, getItem, deleteItem } from '../../api/itemApi';
 import FetchingModal from '../common/FetchingModal';
 import ResultModal from '../common/ResultModal';
+import { useCart } from '../../hooks/useCart';
+import { useLogin } from '../../hooks/useLogin';
+import { changeCartItem } from '../../api/cartApi';
 
 
 const initState = {
@@ -22,6 +25,11 @@ function ReadComponent({ itemId }) {
 
     const { moveToList, moveToModify } = useMove();
 
+    // 현재 사용자의 장바구니에 담긴 상품들
+    const {cartItems, changeCart} = useCart();
+
+    const {loginState} = useLogin();
+
     const handleClickDelete = () => {
         if(window.confirm("삭제하시겠습니까?")) {
             setResult(item.itemId);
@@ -33,6 +41,22 @@ function ReadComponent({ itemId }) {
         setResult(null);    // null 로 변경하면 결과 Modal 이 사라진다
         setItem({...initState});
         moveToList();
+    }
+
+    const handleClickAdd = () => {
+        let quantity = 1;
+        const addedItem = cartItems.filter(item => item.itemId === parseInt(itemId))[0];    // 이미 추가된 아이템
+        if(addedItem) {
+            if(window.confirm("이미 추가된 상품입니다. 수량을 추가할까요?") === false) {
+                return;
+            }
+            quantity = addedItem.quantity + 1;
+        } else {
+            if(window.confirm("상품을 추가할까요?") === false) {
+                return;
+            }
+        }
+        changeCart({email: loginState.email, quantity: quantity, itemId: itemId});
     }
 
     useEffect(() => {
@@ -93,6 +117,11 @@ function ReadComponent({ itemId }) {
                     className="rounded p-3 m-2 w-32 text-white bg-red-400"
                     onClick={handleClickDelete}>
                     Remove
+                </button>
+                <button type="button"
+                    className="rounded p-3 m-2 w-32 text-white bg-purple-400"
+                    onClick={handleClickAdd}>
+                    Add Cart
                 </button>
             </div>
         </div>
