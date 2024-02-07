@@ -4,6 +4,7 @@ import { getList } from '../../api/itemApi';
 import FetchingModal from '../common/FetchingModal';
 import { API_SERVER_HOST } from "../../api/itemApi";
 import PageComponent from '../common/PageComponent';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 
 const initState = {
@@ -23,9 +24,33 @@ const initState = {
 function ListComponent() {
 
     const { moveToList, moveToRead, page, size, refresh } = useMove();
-    const [serverData, setServerData] = useState(initState);
-    const [fetching, setFetching] = useState(false);
+    // const [serverData, setServerData] = useState(initState);
+    // const [fetching, setFetching] = useState(false);
 
+    const {data, isFetching, isError} = useQuery({
+        queryKey : ['items/list', {page, size, refresh}],
+        queryFn : () => getList({page, size}),
+        staleTime : 1000 * 10
+    });
+
+    
+    // const queryClient = useQueryClient();
+
+    const handleClickPage = (pageParam) => {
+        /*
+        if(pageParam.page === parseInt(page)) {
+            queryClient.invalidateQueries("items/list");
+        }
+        */
+        moveToList(pageParam);
+    }
+
+
+
+    const serverData = data || initState;
+
+
+    /*
     useEffect(() => {
         setFetching(true);  // 처리 중을 나타냄
 
@@ -34,11 +59,12 @@ function ListComponent() {
             setFetching(false);
         })
     }, [page, size, refresh]);
+    */
 
 
     return (
         <div className="border-2 border-blue-100 mt-10 mr-2 ml-2">
-            {fetching ? <FetchingModal /> : <></>}
+            {isFetching ? <FetchingModal /> : <></>}
             <div className="flex flex-wrap mx-auto p-6">
                 {serverData.dtoList.map(item =>
                     <div key={item.itemId} className="w-1/2 p-1 rounded shadow-md border-2" onClick={() => moveToRead(item.itemId)}>
@@ -62,7 +88,7 @@ function ListComponent() {
                     </div>
                 )}
             </div>
-            <PageComponent serverData={serverData} movePage={moveToList}></PageComponent>
+            <PageComponent serverData={serverData} movePage={handleClickPage}></PageComponent>
         </div>
     );
 

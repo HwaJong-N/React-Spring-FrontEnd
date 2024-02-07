@@ -3,6 +3,7 @@ import { API_SERVER_HOST, getItem, modifyItem } from '../../api/itemApi';
 import useMove from '../../hooks/useMove';
 import FetchingModal from '../common/FetchingModal';
 import ResultModal from '../common/ResultModal';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 const initState = {
     itemId: 0,
@@ -20,9 +21,30 @@ function ModifyComponent({ itemId }) {
 
     const [item, setItem] = useState(initState);
     const [fetching, setFetching] = useState(false);
-    const [result, setResult] = useState(null);
+    // const [result, setResult] = useState(null);
     const uploadRef = useRef();
 
+
+    const query = useQuery({
+        queryKey : ['items', itemId],
+        queryFn : () => getItem(itemId),
+        staleTime : Infinity
+    })
+
+    const modifyMutation = useMutation({
+        mutationFn : (item) => modifyItem(itemId, item)
+    })
+
+    const queryClient = useQueryClient();
+
+
+    useEffect(() => {
+        if(query.isSuccess) {
+            setItem(query.data);
+        }
+    }, [itemId, query.data, query.isSuccess])
+
+    /*
     useEffect(() => {
         setFetching(true);
         getItem(itemId).then(data => {
@@ -30,9 +52,14 @@ function ModifyComponent({ itemId }) {
             setFetching(false);
         })
     }, [itemId]);
+    */
 
     const closeModal = () => {
-        setResult(null);
+        //setResult(null);
+        if(modifyMutation.isSuccess) {
+            queryClient.invalidateQueries(['items', itemId]);
+            queryClient.invalidateQueries('items/list');
+        }
         moveToRead(itemId);
     }
 
@@ -67,24 +94,35 @@ function ModifyComponent({ itemId }) {
                 formData.append("uploadedFileNames", item.uploadedFileNames[i]);
             }
 
+            /*
             setFetching(true);
             modifyItem(itemId, formData).then(() => {
                 setFetching(false);
                 setResult(itemId);
                 setItem({...initState})
             })
+            */
+           modifyMutation.mutate(formData);
         }
     }
 
 
     return (
         <div className="border-2 border-sky-200 mt-10 m-2 p-4">
+            {/*
             {fetching ? <FetchingModal /> : <></>}
             {result ? <ResultModal
                 title={'Success'}
                 content={`${result}번 상품 수정 완료!`}
                 callbackFn={closeModal} />
                 : <></>}
+            */}
+            {query.isFetching || modifyMutation.isPending ? <FetchingModal /> : <></>}
+            {modifyMutation.isSuccess ? <ResultModal 
+                title={'Modify'}
+                content={'수정되었습니다'}
+                callbackFn={closeModal}/>
+            : <></>}
             <div className="flex justify-center">
                 <div className="relative mb-4 flex w-full flex-wrap items-stretch">
                     <div className="w-1/5 p-6 text-right font-bold">Item Name</div>

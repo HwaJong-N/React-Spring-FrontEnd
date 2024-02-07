@@ -6,6 +6,7 @@ import ResultModal from '../common/ResultModal';
 import { useCart } from '../../hooks/useCart';
 import { useLogin } from '../../hooks/useLogin';
 import { changeCartItem } from '../../api/cartApi';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 
 const initState = {
@@ -19,9 +20,9 @@ const initState = {
 
 function ReadComponent({ itemId }) {
 
-    const [item, setItem] = useState(initState);
-    const [fetching, setFetching] = useState(false);
-    const [result, setResult] = useState(null); // 삭제 결과를 저장
+    // const [item, setItem] = useState(initState);     // data 로 대체
+    // const [fetching, setFetching] = useState(false); // isFetching 으로 대체
+    // const [result, setResult] = useState(null); // 삭제 결과를 저장
 
     const { moveToList, moveToModify } = useMove();
 
@@ -32,14 +33,19 @@ function ReadComponent({ itemId }) {
 
     const handleClickDelete = () => {
         if(window.confirm("삭제하시겠습니까?")) {
-            setResult(item.itemId);
-            deleteItem(item.itemId);
+            //setResult(item.itemId);
+            //deleteItem(item.itemId);
+            delMutation.mutate(itemId);
         }
     }
 
     const closeModal = () => {
-        setResult(null);    // null 로 변경하면 결과 Modal 이 사라진다
-        setItem({...initState});
+        // setResult(null);    // null 로 변경하면 결과 Modal 이 사라진다
+        //setItem({...initState});
+        if(delMutation.isSuccess) {
+            queryClient.invalidateQueries(['items', itemId]);
+            queryClient.invalidateQueries('items/list');
+        }
         moveToList();
     }
 
@@ -59,6 +65,23 @@ function ReadComponent({ itemId }) {
         changeCart({email: loginState.email, quantity: quantity, itemId: itemId});
     }
 
+    // React Query 추가
+    const {data, isFetching} = useQuery({
+        queryKey : ['items', itemId],
+        queryFn : () => getItem(itemId),
+        staleTime : 1000 * 10
+    });
+
+
+    const delMutation = useMutation({
+        mutationFn : (itemId) => deleteItem(itemId)
+    });
+
+    const queryClient = useQueryClient();
+
+    const item = data || initState;
+
+    /*
     useEffect(() => {
         setFetching(true);
         getItem(itemId).then(data => {
@@ -67,12 +90,16 @@ function ReadComponent({ itemId }) {
             console.log("data = ", data);
         })
     }, [itemId]);
+    */
 
     return (
         <div className="border-2 border-sky-200 mt-10 m-2 p-4">
-            {fetching ? <FetchingModal /> : <></>}
-            {result ? <ResultModal title={'Success'} content={`${result}번 상품이 삭제되었습니다`} callbackFn={closeModal} />
-                    : <></>}
+            {isFetching || delMutation.isPending ? <FetchingModal /> : <></>}
+            {delMutation.isSuccess ? <ResultModal 
+                title={'Delete'}
+                content={'삭제되었습니다'}
+                callbackFn={closeModal}/>
+            : <></>}
             <div className="flex justify-center mt-10">
                 <div className="relative mb-4 flex w-full flex-wrap items-stretch">
                     <div className="w-1/5 p-6 text-right font-bold">Item No</div>

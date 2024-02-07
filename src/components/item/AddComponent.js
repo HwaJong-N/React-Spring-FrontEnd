@@ -3,6 +3,7 @@ import { addItem } from '../../api/itemApi';
 import FetchingModal from '../common/FetchingModal';
 import ResultModal from '../common/ResultModal';
 import useMove from '../../hooks/useMove';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 const initState = {
     itemName: '',
@@ -14,13 +15,23 @@ const initState = {
 
 function AddComponent() {
 
-    const [fetching, setFetching] = useState(false);    // 처리 중인지를 나타내는 상태
-    const [result, setResult] = useState(null);    // 저장 모달을 띄우기 위한 상태
+    // const [fetching, setFetching] = useState(false);    // 처리 중인지를 나타내는 상태
+    // const [result, setResult] = useState(null);    // 저장 모달을 띄우기 위한 상태
     const [item, setItem] = useState(initState);
     // React 에서 DOM Element 를 식별하기 위해서 사용하는게 useRef
     const uploadRef = useRef();
 
     const { moveToList } = useMove();
+
+
+    const addMutation = useMutation({
+        mutationFn: (item) => addItem(item),
+    });
+
+    const queryClient = useQueryClient();;
+
+
+
 
     const handleChangeItem = (event) => {
         item[event.target.name] = event.target.value;
@@ -42,17 +53,20 @@ function AddComponent() {
             formData.append("itemDesc", item.itemDesc);
             formData.append("price", item.price);
 
-            setFetching(true);
+            // setFetching(true);
 
+            /*
             addItem(formData).then(data => {
                 setFetching(false);
                 setResult(data.RESULT);
             });
+            */
+           addMutation.mutate(formData);
         }
     }
 
     const closeModal = () => {
-        setResult(null);
+        queryClient.invalidateQueries("items/list");
         moveToList();
     }
 
@@ -112,10 +126,10 @@ function AddComponent() {
                     </button>
                 </div>
             </div>
-            {fetching ? <FetchingModal /> : <></>}   {/* 저장이 처리 중이라면 처리 중이라는 모달을 띄운다 */}
-            {result ? <ResultModal
+            {addMutation.isPending ? <FetchingModal /> : <></>}   {/* 저장이 처리 중이라면 처리 중이라는 모달을 띄운다 */}
+            {addMutation.isSuccess ? <ResultModal
                 title={'Success'}
-                content={`${result}번 상품 등록 완료!`}
+                content={`${addMutation.data.RESULT}번 상품 등록 완료!`}
                 callbackFn={closeModal} />
                 : <></>}
         </div>
